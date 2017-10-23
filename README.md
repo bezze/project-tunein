@@ -5,7 +5,7 @@ This is an easy command line interface to https://tunein.com .
 Requirements: 
 - Python 3+
 - bs4 python3 package
-- mpv or other cli player
+- mpv + yt-download or other cli player
 
 Use:
 ```
@@ -17,3 +17,5 @@ $ ./tune-in.py search string
 Enter number: 
 $ 1
 ```
+
+Currently, it's set to use mpv as default, but the script can easily be edited to use other progams.
