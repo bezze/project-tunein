@@ -8,13 +8,12 @@ Requirements:
 - mpv or other cli player
 
 Use:
-
->$ ./tune-in.py search string
-\#	Name
-
+```
+$ ./tune-in.py search string
+#	Name
 1	Result 1 - subtitle 1
-
 2	Result 2 - subtitle 2
 
 Enter number: 
->$ 1
+$ 1
+```
