@@ -10,7 +10,7 @@ Requirements:
 Use:
 
 >$ ./tune-in.py search string
-#	Name
+\#	Name
 1	Result 1 - subtitle 1
 2	Result 2 - subtitle 2
 Enter number: 
