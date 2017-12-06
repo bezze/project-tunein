@@ -115,7 +115,7 @@ def save_radio(link_hash):
 
         name = input('Enter name: ')
 
-        with open(CONFIG+'/radio-list.dat','a+') as radio_file:
+        with open(CONFIG+'/radio-list.dat','r+') as radio_file:
             lineas = radio_file.readlines()
             if lineas == []:
                 N_last = 0
