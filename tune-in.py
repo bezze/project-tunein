@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup as bs
 import re
 
 from sys import argv, exit
+import os
 from subprocess import call
 import urllib.request as ur
 import urllib.parse as up
@@ -93,6 +94,39 @@ def get_radio_link(soup):
 
     return link
 
+def check_dir():
+
+    HOME = os.environ["HOME"]
+    CONFIG = HOME + "/.config/tune-in"
+    
+    if not os.path.isdir(CONFIG):
+        os.mkdir(CONFIG)
+
+    return CONFIG
+
+
+def save_radio(link_hash):
+
+    YES = input('Would you like to add this radio to your list? ')
+    check = [i in YES for i in ["y", "Y", "yes", "YES", "ya", "1", "ye", "ok", "OK", "fuck you" ]]
+    if True in check:
+        
+        CONFIG = check_dir()
+
+        name = input('Enter name: ')
+
+        with open(CONFIG+'/radio-list.dat','a+') as radio_file:
+            lineas = radio_file.readlines()
+            if lineas == []:
+                N_last = 0
+            else:
+                N_last = int(lineas[-1].split()[0])
+            new_line = str(N_last + 1)+" "+ name +" "+ link_hash + "\n"
+            radio_file.write(new_line)
+
+        print("Saved as "+name+" in #"+str(N_last+1))
+
+
 def main(argv):
 
     argv = ' '.join(argv)
@@ -115,7 +149,13 @@ def main(argv):
 
     calls=[PLAYER, OPTS, link_hash]
 
-    call(calls)
+    try:
+        call(calls)
+    except KeyboardInterrupt:
+        try:
+            save_radio(link_hash)
+        except KeyboardInterrupt:
+            exit()
 
 if __name__ == "__main__":
     main(argv[1:])
