@@ -21,16 +21,16 @@ def query_tunein(argv):
     query_enc = up.urlencode(query) #.encode('utf-8')
     searchReq = ur.Request(root+query_enc) #, data=)
     searchReq.add_header('User-Agent',UserAgent)
-    
+
     soup = bs(ur.urlopen(searchReq), 'html.parser')
 
     return soup
 
 def get_query(soup):
 
-    re_link=re.compile('.*'+re.escape('guide-item__guideItemLink___3w_uL')+'.*') 
+    re_link=re.compile('.*'+re.escape('guide-item__guideItemLink___3w_uL')+'.*')
     re_title=re.compile('.*'+re.escape('guide-item__guideItemTitle___VBHQg')+'.*')
-    re_subtitle=re.compile('.*'+re.escape('guide-item__guideItemSubtitle___2hQxF')+'.*') 
+    re_subtitle=re.compile('.*'+re.escape('guide-item__guideItemSubtitle___2hQxF')+'.*')
     get_meta=soup.find_all('a', class_=re_link)
 
     result_dir={}
@@ -41,13 +41,13 @@ def get_query(soup):
             title = meta.find(class_=re_title).string
             subtitle = meta.find(class_=re_subtitle).string
             name = title +' - '+subtitle
-            i = len(result_dir) +1 
+            i = len(result_dir) +1
             result_dir[i]=[name, link]
 
         except AttributeError:
             pass
 
-    """ Not supported yet """    
+    """ Not supported yet """
     # Get common categories
     # get_common=soup.find_all('a', class_="navigationMenuItem__link___3PXCP")
     # nav_dir={}
@@ -55,8 +55,8 @@ def get_query(soup):
     # for common in get_common:
     #     href = common.get('href')
     #     link = 'https://tunein.com' + href
-    #     name = 
-    #     i = len(result_dir) +1 
+    #     name =
+    #     i = len(result_dir) +1
     #     result_dir[i]=[name, link]
 
     return result_dir
@@ -88,7 +88,7 @@ def get_radio_link(soup):
         if content!=None:
             escaped=re.escape('http://tun.in/') # Escape slashes and dots
             regular=re.compile(escaped+'.*') # Compiling expression. Search for strings starting with 'escaped'
-            match=re.match(regular, content) # Actual searching 
+            match=re.match(regular, content) # Actual searching
             if match: # match returns True if it matchs
                 link=match.group(0)
 
@@ -98,7 +98,7 @@ def check_dir():
 
     HOME = os.environ["HOME"]
     CONFIG = HOME + "/.config/tune-in"
-    
+
     if not os.path.isdir(CONFIG):
         os.mkdir(CONFIG)
 
@@ -110,7 +110,7 @@ def save_radio(link_hash):
     YES = input('Would you like to add this radio to your list? ')
     check = [i in YES for i in ["y", "Y", "yes", "YES", "ya", "1", "ye", "ok", "OK", "fuck you" ]]
     if True in check:
-        
+
         CONFIG = check_dir()
 
         name = input('Enter name: ')
@@ -126,36 +126,71 @@ def save_radio(link_hash):
 
         print("Saved as "+name+" in #"+str(N_last+1))
 
+def load_radio(n):
+
+    CONFIG = check_dir()
+
+    with open(CONFIG + '/radio-list.dat','r') as radio_file:
+        lineas = radio_file.readlines()
+
+    selected = lineas[int(n)-1].split()
+
+    return selected[2].strip('\n')
+
+def print_list():
+
+    CONFIG = check_dir()
+
+    with open(CONFIG + '/radio-list.dat','r') as radio_file:
+        for line in radio_file:
+            print(line)
 
 def main(argv):
 
-    argv = ' '.join(argv)
+    if argv[0] == "load":
 
-    soup = query_tunein(argv)
+        link_hash = load_radio(argv[1])
 
-    results=get_query(soup)
+    elif argv[0] == "list":
 
-    print_results(results)
+        print_list()
 
-    try:                                                                             
-        selected_radio = input('Enter number: ')
-    except KeyboardInterrupt:                                                        
-        print('\n')                                                    
         exit()
 
-    soup_radio = get_soup_radio( results[int(selected_radio)][1] )
+    else:
 
-    link_hash = get_radio_link(soup_radio)
+        argv = ' '.join(argv)
+
+        soup = query_tunein(argv)
+
+        results=get_query(soup)
+
+        print_results(results)
+
+        try:
+            selected_radio = input('Enter number: ')
+        except KeyboardInterrupt:
+            print('\n')
+            exit()
+
+        soup_radio = get_soup_radio( results[int(selected_radio)][1] )
+
+        link_hash = get_radio_link(soup_radio)
 
     calls=[PLAYER, OPTS, link_hash]
 
     try:
         call(calls)
     except KeyboardInterrupt:
-        try:
-            save_radio(link_hash)
-        except KeyboardInterrupt:
-            exit()
+        if argv[0] != "load":
+            try:
+                save_radio(link_hash)
+                print()
+            except KeyboardInterrupt:
+                print()
+                exit()
+        print()
+        exit()
 
 if __name__ == "__main__":
     main(argv[1:])
